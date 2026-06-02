@@ -64,9 +64,11 @@ public:
 private:
   void layoutScene(std::uint32_t width, std::uint32_t height);
   void tryAuthenticate();
-  void onAuthMessage(const std::optional<GreetdAuthMessage> &msg);
   void onAuthSuccess();
-  void onAuthError(const std::string &error);
+  void onAuthError(const GreetdError &error);
+  void resetAuthSession();
+  void clearPasswordInput();
+  bool driveAuthConversation(std::optional<GreetdAuthMessage> pending);
   void updateStatus(const std::string &text, bool isError);
   void toggleUserMenu();
   void toggleSessionMenu();

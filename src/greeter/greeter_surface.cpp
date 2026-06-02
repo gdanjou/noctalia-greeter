@@ -905,9 +905,48 @@ void GreeterSurface::layoutScene(std::uint32_t width, std::uint32_t height) {
   }
 }
 
+bool GreeterSurface::driveAuthConversation(
+    std::optional<GreetdAuthMessage> pending) {
+  while (pending.has_value()) {
+    const GreetdAuthMessage &authMsg = *pending;
+
+    if (authMsg.type == GreetdAuthMessageType::Info ||
+        authMsg.type == GreetdAuthMessageType::Error) {
+      updateStatus(authMsg.message,
+                   authMsg.type == GreetdAuthMessageType::Error);
+      if (authMsg.type == GreetdAuthMessageType::Error) {
+        clearPasswordInput();
+      }
+      pending = m_greetdClient->postAuthData("");
+      if (m_greetdClient->lastError()) {
+        onAuthError(*m_greetdClient->lastError());
+        return false;
+      }
+      continue;
+    }
+
+    if (m_password.empty()) {
+      if (!authMsg.message.empty()) {
+        updateStatus(authMsg.message, false);
+      }
+      return false;
+    }
+
+    pending = m_greetdClient->postAuthData(m_password);
+    clearPasswordInput();
+    if (m_greetdClient->lastError()) {
+      onAuthError(*m_greetdClient->lastError());
+      return false;
+    }
+  }
+
+  return true;
+}
+
 void GreeterSurface::tryAuthenticate() {
-  if (!m_greetdClient || m_authenticating)
+  if (!m_greetdClient || m_authenticating) {
     return;
+  }
   if (m_username.empty()) {
     updateStatus("Enter a username", true);
     return;
@@ -920,38 +959,28 @@ void GreeterSurface::tryAuthenticate() {
   m_authenticating = true;
   updateStatus("Authenticating...", false);
 
+  std::optional<GreetdAuthMessage> pending;
   if (!m_authSessionStarted) {
-    auto initialMsg = m_greetdClient->createSession(m_username);
+    pending = m_greetdClient->createSession(m_username);
     if (m_greetdClient->lastError()) {
-      onAuthError(m_greetdClient->lastError()->description);
+      onAuthError(*m_greetdClient->lastError());
       return;
     }
     m_authSessionStarted = true;
-    if (initialMsg.has_value() && !initialMsg->message.empty()) {
-      updateStatus(initialMsg->message, false);
+  } else {
+    pending = m_greetdClient->postAuthData(m_password);
+    if (m_greetdClient->lastError()) {
+      onAuthError(*m_greetdClient->lastError());
+      return;
     }
   }
 
-  auto msg = m_greetdClient->postAuthData(m_password);
-
-  if (m_greetdClient->lastError()) {
-    onAuthError(m_greetdClient->lastError()->description);
+  if (!driveAuthConversation(std::move(pending))) {
+    m_authenticating = false;
     return;
   }
 
-  if (msg.has_value()) {
-    onAuthMessage(msg);
-  } else {
-    onAuthSuccess();
-  }
-}
-
-void GreeterSurface::onAuthMessage(
-    const std::optional<GreetdAuthMessage> &msg) {
-  m_authenticating = false;
-  if (msg.has_value()) {
-    updateStatus(msg->message, false);
-  }
+  onAuthSuccess();
 }
 
 void GreeterSurface::onAuthSuccess() {
@@ -975,13 +1004,9 @@ void GreeterSurface::onAuthSuccess() {
 
   m_authenticating = true;
   if (!m_greetdClient->startSession(cmd)) {
-    // Reset greetd auth state so the next login calls create_session again.
     m_authenticating = false;
-    m_authSessionStarted = false;
-    m_password.clear();
-    if (m_passwordField != nullptr) {
-      m_passwordField->setValue("");
-    }
+    resetAuthSession();
+    clearPasswordInput();
 
     if (m_greetdClient->lastError()) {
       kLog.error("start_session failed: {}",
@@ -999,12 +1024,26 @@ void GreeterSurface::onAuthSuccess() {
   }
 }
 
-void GreeterSurface::onAuthError(const std::string &error) {
-  m_authenticating = false;
+void GreeterSurface::resetAuthSession() {
+  if (m_greetdClient != nullptr && m_authSessionStarted) {
+    (void)m_greetdClient->cancelSession();
+  }
   m_authSessionStarted = false;
-  updateStatus(error, true);
-  m_passwordField->setValue("");
-  kLog.warn("authentication failed: {}", error);
+}
+
+void GreeterSurface::clearPasswordInput() {
+  m_password.clear();
+  if (m_passwordField != nullptr) {
+    m_passwordField->setValue("");
+  }
+}
+
+void GreeterSurface::onAuthError(const GreetdError &error) {
+  m_authenticating = false;
+  clearPasswordInput();
+  resetAuthSession();
+  updateStatus(error.description, true);
+  kLog.warn("authentication failed: {}", error.description);
 }
 
 void GreeterSurface::updateStatus(const std::string &text, bool isError) {

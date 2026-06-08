@@ -89,7 +89,7 @@ echo "     [default_session]"
 echo "     command = \"${SESSION_BIN}\""
 echo "     user = \"${GREETER_USER}\""
 echo
-echo "  2. Restart greetd (pick what your distro uses):"
+echo "  2. Restart greetd:"
 if command -v systemctl >/dev/null 2>&1; then
   echo "     sudo systemctl restart greetd"
 fi

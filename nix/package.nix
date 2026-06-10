@@ -1,6 +1,5 @@
 {
   lib,
-  config,
   stdenv,
   meson,
   ninja,
@@ -20,7 +19,6 @@
   glib,
   librsvg,
   jemalloc,
-  autoAddDriverRunpath,
 }: let
   inherit (builtins) head match readFile;
   version = head (match ".*version: '([^']+)'.*" (readFile ../meson.build));

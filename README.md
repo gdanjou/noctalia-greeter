@@ -45,7 +45,7 @@ sudo pacman -S meson gcc just \
   greetd dbus \
   wayland wayland-protocols wlroots0.20 \
   libglvnd freetype2 fontconfig \
-  cairo pango \
+  cairo pango harfbuzz \
   libxkbcommon glib2 \
   libwebp librsvg
 ```
@@ -58,7 +58,7 @@ sudo dnf install meson gcc-c++ just \
   wayland-devel wayland-protocols-devel wlroots-devel \
   libEGL-devel mesa-libGLES-devel \
   freetype-devel fontconfig-devel \
-  cairo-devel pango-devel \
+  cairo-devel pango-devel harfbuzz-devel \
   libxkbcommon-devel glib2-devel \
   libwebp-devel librsvg2-devel
 ```
@@ -71,7 +71,7 @@ sudo apt install meson g++ just \
   libwayland-dev wayland-protocols libwlroots-0.20-dev \
   libegl-dev libgles-dev \
   libfreetype-dev libfontconfig-dev \
-  libcairo2-dev libpango1.0-dev \
+  libcairo2-dev libpango1.0-dev libharfbuzz-dev \
   libxkbcommon-dev libglib2.0-dev \
   libwebp-dev librsvg2-dev
 ```
@@ -83,7 +83,7 @@ sudo xbps-install meson ninja pkg-config git \
   greetd dbus \
   wayland-devel wayland-protocols wlroots-devel libepoxy-devel \
   MesaLib-devel libglvnd-devel cairo-devel \
-  pango-devel fontconfig-devel freetype-devel \
+  pango-devel fontconfig-devel freetype-devel harfbuzz-devel \
   libxkbcommon-devel libwebp-devel librsvg-devel
 ```
 

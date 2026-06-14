@@ -1,6 +1,7 @@
 #include "render/programs/wallpaper_program.h"
 
 #include <stdexcept>
+#include <string>
 
 namespace {
 

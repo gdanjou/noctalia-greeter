@@ -95,6 +95,48 @@ Build requires `wlroots-0.20` and `wayland-server` development packages (see dis
 
 On Void Linux, `libepoxy-devel` is used when EGL/GLES pkg-config modules are not available.
 
+## NixOS
+
+A flake and NixOS module are provided.
+
+Add the input to your `flake.nix`:
+
+```nix
+inputs = {
+  noctalia-greeter = {
+    url = "github:noctalia-dev/noctalia-greeter";
+    inputs.nixpkgs.follows = "nixpkgs";
+  };
+};
+```
+
+Import the module and enable the greeter in your configuration:
+
+```nix
+imports = [
+  inputs.noctalia-greeter.nixosModules.default
+];
+
+programs.noctalia-greeter = {
+  enable = true;
+  package = inputs.noctalia-greeter.packages.${pkgs.stdenv.hostPlatform.system}.default;
+
+  # Optional configuration
+  greeter-args = "";
+  settings.cursor = {
+    theme = "Adwaita";
+    size = 24;
+    package = pkgs.adwaita-icon-theme;
+  };
+};
+```
+
+The module enables greetd and sets the session command automatically.
+
+`greeter-args` passes extra flags to `noctalia-greeter-session`, for example
+`--session <name>` to set a default session. Run `noctalia-greeter sessions`
+to list valid names.
+
 ## Building and installing
 
 Requires [just](https://github.com/casey/just) and [meson](https://mesonbuild.com/).
@@ -310,6 +352,7 @@ Contributions are welcome: fixes, polish, docs, or UX improvements.
 - Open a PR for improvements
 
 ---
+
 ## License
 
 Distributed under the MIT License. See [LICENSE](LICENSE) for details.

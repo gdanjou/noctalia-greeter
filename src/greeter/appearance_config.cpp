@@ -61,6 +61,7 @@ std::optional<GreeterSyncedAppearance> loadGreeterSyncedAppearance() {
 
     GreeterSyncedAppearance appearance;
     appearance.themeMode = root.value("theme_mode", "dark");
+    appearance.cornerRadiusScale = root.value("corner_radius_scale", 1.0f);
 
     const auto paletteIt = root.find("palette");
     if (paletteIt == root.end() || !paletteIt->is_object()) {

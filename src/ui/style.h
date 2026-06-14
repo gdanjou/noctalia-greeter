@@ -52,13 +52,18 @@ public:
   static constexpr float borderWidthBase = 1.0f;
   [[nodiscard]] static float borderWidth() noexcept;
 
-  // Radii
-  static constexpr float radiusSmBase = 4.0f;
-  static constexpr float radiusMdBase = 8.0f;
-  static constexpr float radiusLgBase = 12.0f;
-  static constexpr float radiusXlBase = 16.0f;
+  // Radii (1:2:3:4 ratio, matches noctalia Style)
+  static constexpr float radiusSmBase = 3.0f;
+  static constexpr float radiusMdBase = 6.0f;
+  static constexpr float radiusLgBase = 9.0f;
+  static constexpr float radiusXlBase = 12.0f;
   static constexpr float radiusFull = 9999.0f;
 
+  static void setCornerRadiusScale(float scale) noexcept;
+  [[nodiscard]] static float cornerRadiusScale() noexcept;
+
+  [[nodiscard]] static float scaledRadius(float radius,
+                                          float factor = 1.0f) noexcept;
   [[nodiscard]] static float radiusSm() noexcept;
   [[nodiscard]] static float radiusMd() noexcept;
   [[nodiscard]] static float radiusLg() noexcept;
@@ -76,4 +81,5 @@ public:
 
 private:
   static float s_uiScale;
+  static float s_cornerRadiusScale;
 };

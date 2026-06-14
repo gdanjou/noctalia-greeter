@@ -15,6 +15,7 @@ struct GreeterSyncedAppearance {
   std::string wallpaperPath;
   WallpaperFillMode wallpaperFillMode = WallpaperFillMode::Crop;
   Color wallpaperFillColor = rgba(0.0f, 0.0f, 0.0f, 0.0f);
+  float cornerRadiusScale = 1.0f;
 };
 
 [[nodiscard]] std::filesystem::path greeterAppearanceConfigPath();

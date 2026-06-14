@@ -1371,6 +1371,7 @@ void GreeterSurface::applyScheme(const std::size_t schemeIndex) {
     }
 
     setPalette(m_syncedAppearance->palette);
+    Style::setCornerRadiusScale(m_syncedAppearance->cornerRadiusScale);
     m_wallpaperPath = m_syncedAppearance->wallpaperPath;
     m_wallpaperFillMode = m_syncedAppearance->wallpaperFillMode;
     m_wallpaperFillColor = m_syncedAppearance->wallpaperFillColor;
@@ -1383,6 +1384,7 @@ void GreeterSurface::applyScheme(const std::size_t schemeIndex) {
           noctalia::theme::findBuiltinPalette(m_schemeNames[schemeIndex])) {
     setPalette(builtinPalette->dark.palette);
   }
+  Style::setCornerRadiusScale(1.0f);
   clearWallpaperDisplay();
 }
 

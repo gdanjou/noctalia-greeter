@@ -3,6 +3,7 @@
 #include <algorithm>
 
 float Style::s_uiScale = 1.0f;
+float Style::s_cornerRadiusScale = 1.0f;
 
 void Style::setUiScale(float scale) noexcept {
   s_uiScale = std::clamp(scale, kMinUiScale, kMaxUiScale);
@@ -11,6 +12,16 @@ void Style::setUiScale(float scale) noexcept {
 float Style::uiScale() noexcept { return s_uiScale; }
 
 float Style::scaled(float value) noexcept { return value * s_uiScale; }
+
+void Style::setCornerRadiusScale(float scale) noexcept {
+  s_cornerRadiusScale = std::clamp(scale, 0.0f, 2.0f);
+}
+
+float Style::cornerRadiusScale() noexcept { return s_cornerRadiusScale; }
+
+float Style::scaledRadius(float radius, float factor) noexcept {
+  return radius * s_uiScale * s_cornerRadiusScale * factor;
+}
 
 float Style::spaceXs() noexcept { return spaceXsBase * s_uiScale; }
 float Style::spaceSm() noexcept { return spaceSmBase * s_uiScale; }
@@ -42,20 +53,20 @@ float Style::fontSizeDisplay() noexcept {
 
 float Style::borderWidth() noexcept { return borderWidthBase * s_uiScale; }
 
-float Style::radiusSm() noexcept { return radiusSmBase * s_uiScale; }
-float Style::radiusMd() noexcept { return radiusMdBase * s_uiScale; }
-float Style::radiusLg() noexcept { return radiusLgBase * s_uiScale; }
-float Style::radiusXl() noexcept { return radiusXlBase * s_uiScale; }
+float Style::radiusSm() noexcept { return scaledRadius(radiusSmBase); }
+float Style::radiusMd() noexcept { return scaledRadius(radiusMdBase); }
+float Style::radiusLg() noexcept { return scaledRadius(radiusLgBase); }
+float Style::radiusXl() noexcept { return scaledRadius(radiusXlBase); }
 
 float Style::scaledRadiusSm(float factor) noexcept {
-  return radiusSm() * factor;
+  return scaledRadius(radiusSmBase, factor);
 }
 float Style::scaledRadiusMd(float factor) noexcept {
-  return radiusMd() * factor;
+  return scaledRadius(radiusMdBase, factor);
 }
 float Style::scaledRadiusLg(float factor) noexcept {
-  return radiusLg() * factor;
+  return scaledRadius(radiusLgBase, factor);
 }
 float Style::scaledRadiusXl(float factor) noexcept {
-  return radiusXl() * factor;
+  return scaledRadius(radiusXlBase, factor);
 }

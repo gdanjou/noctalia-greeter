@@ -511,21 +511,43 @@ static bool enable_layout_output(struct greeter_output *output, int layout_x,
   return true;
 }
 
-static void warp_cursor_to_first_output(struct greeter_server *server) {
-  struct greeter_output *outputs[16];
-  const size_t count = collect_outputs(server, outputs, 16);
-  if (count == 0 || !outputs[0]->active) {
+static void warp_cursor_to_output_center(struct greeter_server *server,
+                                         struct greeter_output *output) {
+  if (output == NULL || !output->active) {
     return;
   }
 
   struct wlr_box box;
-  wlr_output_layout_get_box(server->output_layout, outputs[0]->wlr_output,
-                            &box);
+  wlr_output_layout_get_box(server->output_layout, output->wlr_output, &box);
   if (box.width <= 0 || box.height <= 0) {
     return;
   }
-  wlr_cursor_warp(server->cursor, NULL, box.x + box.width * 0.5,
-                  box.y + box.height * 0.5);
+
+  const double x = box.x + box.width * 0.5;
+  const double y = box.y + box.height * 0.5;
+  wlr_cursor_warp(server->cursor, NULL, x, y);
+  wlr_log(WLR_INFO, "warped cursor to center of %s (%.0f, %.0f)",
+          output->wlr_output->name, x, y);
+}
+
+static void warp_cursor_to_initial_position(struct greeter_server *server) {
+  if (!use_all_outputs(server)) {
+    struct greeter_output *pinned =
+        output_by_name(server, server->preferred_output);
+    if (pinned != NULL && pinned->active) {
+      warp_cursor_to_output_center(server, pinned);
+      return;
+    }
+  }
+
+  struct greeter_output *outputs[16];
+  const size_t count = collect_outputs(server, outputs, 16);
+  for (size_t i = 0; i < count; ++i) {
+    if (outputs[i]->active) {
+      warp_cursor_to_output_center(server, outputs[i]);
+      return;
+    }
+  }
 }
 
 static void configure_view(struct greeter_view *view) {
@@ -653,7 +675,7 @@ static void choose_outputs(struct greeter_server *server) {
   }
 
   if (any_output_active(server)) {
-    warp_cursor_to_first_output(server);
+    warp_cursor_to_initial_position(server);
   }
   schedule_launch(server);
   schedule_output_frames(server);
@@ -1010,6 +1032,8 @@ static void try_launch_greeter(void *data) {
   } else if (!any_output_active(server)) {
     return;
   }
+
+  warp_cursor_to_initial_position(server);
 
   char **argv = child_argv(server->child_argc, server->child_argv_ptr);
   bool free_argv = server->child_argc <= 1;

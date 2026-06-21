@@ -22,6 +22,7 @@
 #include <wlr/types/wlr_cursor.h>
 #include <wlr/types/wlr_data_device.h>
 #include <wlr/types/wlr_fractional_scale_v1.h>
+#include <wlr/interfaces/wlr_keyboard.h>
 #include <wlr/types/wlr_input_device.h>
 #include <wlr/types/wlr_keyboard.h>
 #include <wlr/types/wlr_output.h>
@@ -36,6 +37,7 @@
 #include <wlr/util/log.h>
 #include <xkbcommon/xkbcommon-keysyms.h>
 #include <xkbcommon/xkbcommon.h>
+#include <xkbcommon/xkbcommon-names.h>
 
 #ifndef NOCTALIA_GREETER_INSTALLED_BINDIR
 #define NOCTALIA_GREETER_INSTALLED_BINDIR "/usr/local/bin"
@@ -1080,6 +1082,15 @@ static void add_keyboard(struct greeter_server* server, struct wlr_input_device*
   wlr_keyboard_set_keymap(keyboard->wlr_keyboard, keymap);
   xkb_keymap_unref(keymap);
   xkb_context_unref(context);
+
+  // Enable Num Lock by default so numeric keypads work on the greeter.
+  xkb_mod_index_t num_mod = xkb_keymap_mod_get_index(keyboard->wlr_keyboard->keymap, XKB_MOD_NAME_NUM);
+  if (num_mod != XKB_MOD_INVALID) {
+    xkb_mod_mask_t locked = keyboard->wlr_keyboard->modifiers.locked | ((xkb_mod_mask_t)1 << num_mod);
+    wlr_keyboard_notify_modifiers(keyboard->wlr_keyboard, keyboard->wlr_keyboard->modifiers.depressed,
+                                  keyboard->wlr_keyboard->modifiers.latched, locked,
+                                  keyboard->wlr_keyboard->modifiers.group);
+  }
   wlr_keyboard_set_repeat_info(keyboard->wlr_keyboard, 25, 600);
 
   keyboard->modifiers.notify = handle_keyboard_modifiers;

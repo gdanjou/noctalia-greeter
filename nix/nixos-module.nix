@@ -48,16 +48,43 @@ in
         '';
       };
     };
+
+    settings.keyboard = {
+      layout = lib.mkOption {
+        type = lib.types.nullOr lib.types.str;
+        default = null;
+        example = "us";
+        description = "Keyboard layout for the greeter.";
+      };
+
+      variant = lib.mkOption {
+        type = lib.types.nullOr lib.types.str;
+        default = null;
+        example = "colemak";
+        description = "Keyboard variant for the greeter.";
+      };
+
+      options = lib.mkOption {
+        type = lib.types.nullOr lib.types.str;
+        default = null;
+        example = "grp:win_space_toggle";
+        description = "Keyboard options for the greeter.";
+      };
+    };
   };
 
   config =
     let
       user = config.services.greetd.settings.default_session.user;
       cursor = cfg.settings.cursor;
+      keyboard = cfg.settings.keyboard;
       cursorEnv =
         lib.optional (cursor.theme != null) "XCURSOR_THEME=${cursor.theme}"
         ++ lib.optional (cursor.size != null) "XCURSOR_SIZE=${toString cursor.size}"
-        ++ lib.optional (cursor.package != null) "XCURSOR_PATH=${cursor.package}/share/icons";
+        ++ lib.optional (cursor.package != null) "XCURSOR_PATH=${cursor.package}/share/icons"
+        ++ lib.optional (keyboard.layout != null) "XKB_DEFAULT_LAYOUT=${toString keyboard.layout}"
+        ++ lib.optional (keyboard.variant != null) "XKB_DEFAULT_VARIANT=${toString keyboard.variant}"
+        ++ lib.optional (keyboard.options != null) "XKB_DEFAULT_OPTIONS=${toString keyboard.options}";
       envPrefix = lib.optionalString (
         cursorEnv != [ ]
       ) "${pkgs.coreutils}/bin/env ${lib.concatStringsSep " " cursorEnv} ";
